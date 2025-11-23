@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { setSimulations } from '../store/simulationsSlice'
+import { setSimulations, setLoading } from '../store/simulationsSlice'
 import { setSimulationId, clearSimulation } from '../store/editorSlice'
 import { loadSimulations } from '../simulations'
 import { RootState } from '../store'
 import { Simulation } from '../store/simulationsSlice'
 import { useTheme } from './ThemeProvider'
+import { Loader2 } from 'lucide-react'
 
 export function SimulationGallery() {
   const dispatch = useDispatch()
@@ -32,17 +33,19 @@ export function SimulationGallery() {
   useEffect(() => {
     const load = async () => {
       try {
+        dispatch(setLoading(true))
         const loadedSimulations = await loadSimulations()
         dispatch(setSimulations(loadedSimulations))
       } catch (error) {
         console.error('Failed to load simulations:', error)
+        dispatch(setLoading(false))
       }
     }
     
-    if (simulations.length === 0) {
+    if (simulations.length === 0 && !loading) {
       load()
     }
-  }, [dispatch, simulations.length])
+  }, [dispatch, simulations.length, loading])
 
   const handleSimulationClick = (simulationId: string) => {
     // Toggle: if clicking the same simulation, deselect it
@@ -55,14 +58,6 @@ export function SimulationGallery() {
     dispatch(setSimulationId(simulationId))
   }
 
-  if (loading) {
-    return (
-      <div className="p-4 text-center text-muted-foreground">
-        Loading simulations...
-      </div>
-    )
-  }
-
   return (
     <div>
       <div className='text-2xl font-semibold tracking-tight mb-2'>Simulations</div>
@@ -70,6 +65,13 @@ export function SimulationGallery() {
       Fujifilm Film Simulations recreate iconic analog film looks using in-camera color science.
       Each simulation gives your photos a unique mood, tone, and character.
       </div>
+      
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-8 gap-3">
+          <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading simulations...</p>
+        </div>
+      ) : (
       <div className="flex flex-col gap-2">
         {simulations.map((simulation: Simulation, index: number) => {
           const isActive = activeSimulationId === simulation.id
@@ -115,7 +117,7 @@ export function SimulationGallery() {
           )
         })}
       </div>
-
+      )}
     </div>
   )
 }

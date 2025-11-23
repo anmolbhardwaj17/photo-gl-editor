@@ -16,21 +16,14 @@ export function ActiveEdits() {
     wbTemp: 5500,
     wbTint: 0,
     contrast: 0,
+    highlights: 0,
+    shadows: 0,
     hsl: { hue: 0, saturation: 0, luminance: 0 },
     grain: { amount: 0, size: 1 },
     vignette: { amount: 0, size: 0.5, roundness: 0.5 },
     sharpen: { amount: 0, radius: 1 },
   }
   
-  const defaultCurvePoints = [
-    { x: 0, y: 0 },
-    { x: 1, y: 1 },
-  ]
-  
-  const isToneCurveActive = params.curvePoints.length > 2 || 
-    (params.curvePoints.length === 2 && 
-     (Math.abs(params.curvePoints[0].x - params.curvePoints[0].y) > 0.001 || 
-      Math.abs(params.curvePoints[1].x - params.curvePoints[1].y) > 0.001))
   
   const activeEdits = []
   
@@ -79,12 +72,21 @@ export function ActiveEdits() {
     })
   }
   
-  // Tone Curve
-  if (isToneCurveActive) {
+  // Highlights
+  if (Math.abs(params.highlights - defaultParams.highlights) > 0.01) {
     activeEdits.push({
-      id: 'toneCurve',
-      label: 'Tone Curve',
-      onRemove: () => dispatch(updateParams({ curvePoints: defaultCurvePoints })),
+      id: 'highlights',
+      label: `Highlights ${params.highlights > 0 ? '+' : ''}${params.highlights}`,
+      onRemove: () => dispatch(updateParams({ highlights: defaultParams.highlights })),
+    })
+  }
+  
+  // Shadows
+  if (Math.abs(params.shadows - defaultParams.shadows) > 0.01) {
+    activeEdits.push({
+      id: 'shadows',
+      label: `Shadows ${params.shadows > 0 ? '+' : ''}${params.shadows}`,
+      onRemove: () => dispatch(updateParams({ shadows: defaultParams.shadows })),
     })
   }
   

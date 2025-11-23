@@ -7,11 +7,6 @@ export interface ImageMeta {
   originalUrl: string
 }
 
-export interface CurvePoint {
-  x: number
-  y: number
-}
-
 export interface HSLParams {
   hue: number
   saturation: number
@@ -48,7 +43,8 @@ export interface EditorParams {
   wbTemp: number
   wbTint: number
   contrast: number
-  curvePoints: CurvePoint[]
+  highlights: number
+  shadows: number
   hsl: HSLParams
   grain: GrainParams
   vignette: VignetteParams
@@ -67,10 +63,8 @@ const defaultParams: EditorParams = {
   wbTemp: 5500,
   wbTint: 0,
   contrast: 0,
-  curvePoints: [
-    { x: 0, y: 0 },
-    { x: 1, y: 1 },
-  ],
+  highlights: 0,
+  shadows: 0,
   hsl: {
     hue: 0,
     saturation: 0,

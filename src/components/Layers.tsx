@@ -16,15 +16,8 @@ export function Layers() {
     params.wbTemp !== 5500 ||
     params.wbTint !== 0
 
-  // Check if tone curve is modified (not just the default linear curve)
-  const hasToneCurve = params.curvePoints.length > 2 || 
-    params.curvePoints.some((point, index) => {
-      // Default is linear: (0,0) and (1,1)
-      if (index === 0) return point.x !== 0 || point.y !== 0
-      if (index === params.curvePoints.length - 1) return point.x !== 1 || point.y !== 1
-      // Any middle point means curve is modified
-      return true
-    })
+  // Check if highlights/shadows are active
+  const hasHighlightsShadows = params.highlights !== 0 || params.shadows !== 0
 
   const hasHSL =
     params.hsl.hue !== 0 ||
@@ -63,11 +56,11 @@ export function Layers() {
     })
   }
 
-  // Add tone curve layer if active
-  if (hasToneCurve) {
+  // Add highlights/shadows layer if active
+  if (hasHighlightsShadows) {
     layers.push({
-      name: 'Tone Curve',
-      type: 'tone-curve',
+      name: 'Highlights & Shadows',
+      type: 'highlights-shadows',
     })
   }
 

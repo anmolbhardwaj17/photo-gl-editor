@@ -1,5 +1,5 @@
 import { Middleware, AnyAction } from '@reduxjs/toolkit'
-import { EditorParams, CurvePoint } from './editorSlice'
+import { EditorParams } from './editorSlice'
 
 // Define RootState type locally to avoid circular dependency
 type RootState = {
@@ -24,7 +24,8 @@ export const createHistoryMiddleware = (): Middleware<object, RootState, any> =>
       wbTemp: 5500,
       wbTint: 0,
       contrast: 0,
-      curvePoints: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
+      highlights: 0,
+      shadows: 0,
       hsl: { hue: 0, saturation: 0, luminance: 0 },
       grain: { amount: 0, size: 1 },
       vignette: { amount: 0, size: 0.5, roundness: 0.5 },
@@ -45,7 +46,6 @@ export const createHistoryMiddleware = (): Middleware<object, RootState, any> =>
       // Deep clone params to create immutable snapshot
       const snapshot: EditorParams = {
         ...currentParams,
-        curvePoints: currentParams.curvePoints.map((p: CurvePoint) => ({ ...p })),
         hsl: { ...currentParams.hsl },
         grain: { ...currentParams.grain },
         vignette: { ...currentParams.vignette },

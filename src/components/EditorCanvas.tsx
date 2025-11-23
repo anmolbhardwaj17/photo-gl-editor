@@ -383,21 +383,13 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
       // Apply adjustments and LUT
       const hasAdjustments = params.exposure !== 0 || params.contrast !== 0 || params.wbTemp !== 5500 || params.wbTint !== 0
       const hasHSL = params.hsl.hue !== 0 || params.hsl.saturation !== 0 || params.hsl.luminance !== 0
-      // Check if tone curve is non-linear (not the default linear curve from (0,0) to (1,1))
-      // Sort curve points by x to ensure proper interpolation
-      const sortedCurvePoints = [...params.curvePoints].sort((a, b) => a.x - b.x)
-      const isDefaultCurve = sortedCurvePoints.length === 2 && 
-        Math.abs(sortedCurvePoints[0].x - 0) < 0.001 && 
-        Math.abs(sortedCurvePoints[0].y - 0) < 0.001 &&
-        Math.abs(sortedCurvePoints[1].x - 1) < 0.001 && 
-        Math.abs(sortedCurvePoints[1].y - 1) < 0.001
-      const hasToneCurve = !isDefaultCurve && sortedCurvePoints.length >= 2
+      const hasHighlightsShadows = params.highlights !== 0 || params.shadows !== 0
       const hasLUT = lutData && lutSize > 0
       const hasGrain = params.grain.amount > 0
       const hasVignette = params.vignette.amount > 0
       const hasSharpen = params.sharpen.amount > 0
 
-      if (hasAdjustments || hasHSL || hasToneCurve || hasLUT || hasGrain || hasVignette || hasSharpen) {
+      if (hasAdjustments || hasHSL || hasHighlightsShadows || hasLUT || hasGrain || hasVignette || hasSharpen) {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
         const data = imageData.data
         
@@ -457,37 +449,39 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
           return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)]
         }
         
-        // Helper function to apply tone curve
-        const applyToneCurve = (value: number, curvePoints: typeof params.curvePoints): number => {
-          if (curvePoints.length < 2) return value
+        // Helper function to apply highlights and shadows with smooth transitions
+        const applyHighlightsShadows = (luminance: number, highlights: number, shadows: number): number => {
+          // Clamp luminance to [0, 1]
+          let value = Math.max(0, Math.min(1, luminance))
           
-          // Clamp value to [0, 1]
-          value = Math.max(0, Math.min(1, value))
-          
-          // Find the two points to interpolate between
-          for (let i = 0; i < curvePoints.length - 1; i++) {
-            const x0 = curvePoints[i].x
-            const y0 = curvePoints[i].y
-            const x1 = curvePoints[i + 1].x
-            const y1 = curvePoints[i + 1].y
-            
-            if (value >= x0 && value <= x1) {
-              // Linear interpolation
-              if (x1 === x0) return y0
-              const t = (value - x0) / (x1 - x0)
-              return y0 + (y1 - y0) * t
-            }
+          // Smooth transition function (smoothstep-like)
+          const smoothstep = (edge0: number, edge1: number, x: number): number => {
+            const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)))
+            return t * t * (3 - 2 * t)
           }
           
-          // Clamp to first/last point
-          if (value <= curvePoints[0].x) {
-            return curvePoints[0].y
-          }
-          if (value >= curvePoints[curvePoints.length - 1].x) {
-            return curvePoints[curvePoints.length - 1].y
+          // Apply shadows (affects darker areas, typically < 0.4)
+          if (shadows !== 0) {
+            // Shadow mask: stronger in darker areas, fades out around 0.4
+            const shadowMask = 1.0 - smoothstep(0.2, 0.5, value)
+            // Map shadow adjustment: -100 to 100 -> -0.5 to 0.5
+            const shadowAmount = (shadows / 100) * 0.5
+            // Apply with smooth falloff
+            value = value + (shadowAmount * shadowMask)
           }
           
-          return value
+          // Apply highlights (affects brighter areas, typically > 0.6)
+          if (highlights !== 0) {
+            // Highlight mask: stronger in brighter areas, fades in around 0.5
+            const highlightMask = smoothstep(0.5, 0.8, value)
+            // Map highlight adjustment: -100 to 100 -> -0.5 to 0.5
+            const highlightAmount = (highlights / 100) * 0.5
+            // Apply with smooth falloff
+            value = value + (highlightAmount * highlightMask)
+          }
+          
+          // Clamp result to prevent clipping
+          return Math.max(0, Math.min(1, value))
         }
         
         // Calculate white balance multipliers (only if needed)
@@ -656,22 +650,27 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
             b = b * 255.0
           }
           
-          // Apply tone curve if needed (before HSL, after basic adjustments)
-          if (hasToneCurve) {
-            // Convert to 0-1 range for curve application
+          // Apply highlights and shadows if needed (before HSL, after basic adjustments)
+          if (hasHighlightsShadows) {
+            // Convert to 0-1 range
             const rNorm = r / 255.0
             const gNorm = g / 255.0
             const bNorm = b / 255.0
             
-            // Apply curve per channel using sorted points
-            const rCurved = applyToneCurve(rNorm, sortedCurvePoints)
-            const gCurved = applyToneCurve(gNorm, sortedCurvePoints)
-            const bCurved = applyToneCurve(bNorm, sortedCurvePoints)
+            // Calculate luminance using standard weights
+            const luminance = (rNorm * 0.299 + gNorm * 0.587 + bNorm * 0.114)
             
-            // Convert back to 0-255 range
-            r = Math.max(0, Math.min(255, rCurved * 255.0))
-            g = Math.max(0, Math.min(255, gCurved * 255.0))
-            b = Math.max(0, Math.min(255, bCurved * 255.0))
+            // Apply highlights and shadows to luminance
+            const adjustedLuminance = applyHighlightsShadows(luminance, params.highlights, params.shadows)
+            
+            // Calculate the adjustment needed
+            const luminanceDelta = adjustedLuminance - luminance
+            
+            // Apply the adjustment proportionally to each channel
+            // This preserves color relationships while adjusting brightness
+            r = Math.max(0, Math.min(255, (rNorm + luminanceDelta) * 255.0))
+            g = Math.max(0, Math.min(255, (gNorm + luminanceDelta) * 255.0))
+            b = Math.max(0, Math.min(255, (bNorm + luminanceDelta) * 255.0))
           }
           
           // Apply HSL adjustments if needed
@@ -771,7 +770,7 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
       }
     }
     img.src = imageMeta.url
-  }, [imageMeta, params.exposure, params.contrast, params.wbTemp, params.wbTint, params.hsl, params.curvePoints, params.grain, params.vignette, params.sharpen, dimensions, activeSimulationId, lutData, lutSize])
+  }, [imageMeta, params.exposure, params.contrast, params.wbTemp, params.wbTint, params.hsl, params.highlights, params.shadows, params.grain, params.vignette, params.sharpen, dimensions, activeSimulationId, lutData, lutSize])
 
   if (!imageMeta) {
     return (

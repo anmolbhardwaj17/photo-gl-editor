@@ -23,6 +23,14 @@ export function BasicAdjustments() {
     dispatch(updateParams({ wbTint: value }))
   }
 
+  const handleHighlightsChange = (value: number) => {
+    dispatch(updateParams({ highlights: value }))
+  }
+
+  const handleShadowsChange = (value: number) => {
+    dispatch(updateParams({ shadows: value }))
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -129,6 +137,60 @@ export function BasicAdjustments() {
             onChange={(e) => handleWBTintChange(parseInt(e.target.value, 10) || 0)}
             className="w-16 px-2 py-1 bg-card border border-border rounded text-foreground text-sm flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-ring"
             aria-label="White balance tint value"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          Highlights
+        </label>
+        <div className="flex items-center gap-2 w-full">
+          <Slider
+            min={-100}
+            max={100}
+            step={1}
+            value={params.highlights}
+            onChange={handleHighlightsChange}
+            className="flex-1"
+            aria-label="Highlights"
+          />
+          <input
+            type="number"
+            min="-100"
+            max="100"
+            step="1"
+            value={params.highlights}
+            onChange={(e) => handleHighlightsChange(parseInt(e.target.value, 10) || 0)}
+            className="w-16 px-2 py-1 bg-card border border-border rounded text-foreground text-sm flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-ring"
+            aria-label="Highlights value"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          Shadows
+        </label>
+        <div className="flex items-center gap-2 w-full">
+          <Slider
+            min={-100}
+            max={100}
+            step={1}
+            value={params.shadows}
+            onChange={handleShadowsChange}
+            className="flex-1"
+            aria-label="Shadows"
+          />
+          <input
+            type="number"
+            min="-100"
+            max="100"
+            step="1"
+            value={params.shadows}
+            onChange={(e) => handleShadowsChange(parseInt(e.target.value, 10) || 0)}
+            className="w-16 px-2 py-1 bg-card border border-border rounded text-foreground text-sm flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-ring"
+            aria-label="Shadows value"
           />
         </div>
       </div>
