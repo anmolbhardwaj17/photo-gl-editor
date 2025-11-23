@@ -1,0 +1,276 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Fonts - Systemia */
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-Regular-BF656e86917aae1.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-Italic-BF656e8691600f6.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-Medium-BF656e86915b1b0.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-MediumItalic-BF656e869191412.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-Semibold-BF656e8690e9195.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-SemiboldItalic-BF656e86918162c.otf') format('opentype');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-Bold-BF656e8690c023b.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-BoldItalic-BF656e8690d8a31.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-Extrabold-BF656e86911316b.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-ExtraboldItalic-BF656e8690dbe51.otf') format('opentype');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-Black-BF656e869053529.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Systemia';
+  src: url('/fonts/SystemiaTest-BlackItalic-BF656e8690b314b.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    /* Light mode theme */
+    /* Background: #FFFFFF, Foreground: #000000, Card: #EEF0EC */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 90 12% 93%;
+    --card-foreground: 0 0% 0%;
+    --popover: 90 8% 93%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 20%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 85%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 85%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 80%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 75%;
+    --input: 0 0% 75%;
+    --ring: 0 0% 40%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark mode theme */
+    /* Background: #161616, Foreground: #FFFFFF, Card: #1F1F1F */
+    --background: 0 0% 8.6%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 12.2%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 80%;
+    --primary-foreground: 0 0% 8.6%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 0% 18%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 65%;
+  }
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Systemia', sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Utility class to use regular system fonts when needed */
+@layer utilities {
+  .font-regular {
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+}
+
+/* Slider styling - light grey track, lighter grey filled portion, not rounded */
+@layer components {
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+    position: relative;
+    padding: 8px 0;
+    margin: 0;
+  }
+
+  /* WebKit browsers (Chrome, Safari) */
+  input[type="range"]::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, 
+      rgba(0, 0, 0, 1) 0%, 
+      rgba(0, 0, 0, 1) var(--slider-progress, 0%), 
+      rgba(0, 0, 0, 0.2) var(--slider-progress, 0%), 
+      rgba(0, 0, 0, 0.2) 100%);
+    height: 2px;
+    border-radius: 0;
+  }
+
+  input[type="range"]::-webkit-slider-track {
+    background: rgba(0, 0, 0, 0.2);
+    height: 2px;
+    border-radius: 0;
+  }
+  
+  .dark input[type="range"]::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, 
+      rgba(255, 255, 255, 1) 0%, 
+      rgba(255, 255, 255, 1) var(--slider-progress, 0%), 
+      rgba(255, 255, 255, 0.2) var(--slider-progress, 0%), 
+      rgba(255, 255, 255, 0.2) 100%);
+  }
+  
+  .dark input[type="range"]::-webkit-slider-track {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    background: #fff;
+    height: 12px;
+    width: 12px;
+    border-radius: 0;
+    border: 1px solid #d3d3d3;
+    cursor: pointer;
+    margin-top: -5px;
+    position: relative;
+    z-index: 1;
+  }
+
+    /* Firefox */
+    input[type="range"]::-moz-range-track {
+      background: rgba(0, 0, 0, 0.2);
+      height: 2px;
+      border-radius: 0;
+      border: none;
+    }
+
+    input[type="range"]::-moz-range-progress {
+      background: rgba(0, 0, 0, 1);
+      height: 2px;
+      border-radius: 0;
+    }
+    
+    .dark input[type="range"]::-moz-range-track {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .dark input[type="range"]::-moz-range-progress {
+      background: rgba(255, 255, 255, 1);
+    }
+
+  input[type="range"]::-moz-range-thumb {
+    background: #fff;
+    height: 12px;
+    width: 12px;
+    border-radius: 0;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+  }
+
+  input[type="range"]:focus {
+    outline: none;
+  }
+
+  input[type="range"]:focus::-webkit-slider-thumb {
+    border: 2px solid rgba(255, 255, 255, 0.5);
+  }
+
+  input[type="range"]:focus::-moz-range-thumb {
+    border: 2px solid rgba(255, 255, 255, 0.5);
+  }
+}
+
