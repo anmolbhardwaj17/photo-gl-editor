@@ -383,11 +383,15 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
       // Apply adjustments and LUT
       const hasAdjustments = params.exposure !== 0 || params.contrast !== 0 || params.wbTemp !== 5500 || params.wbTint !== 0
       const hasHSL = params.hsl.hue !== 0 || params.hsl.saturation !== 0 || params.hsl.luminance !== 0
-      // Check if tone curve is non-linear (not the default linear curve)
-      const hasToneCurve = params.curvePoints.length > 2 || 
-        (params.curvePoints.length === 2 && 
-         (Math.abs(params.curvePoints[0].x - params.curvePoints[0].y) > 0.001 || 
-          Math.abs(params.curvePoints[1].x - params.curvePoints[1].y) > 0.001))
+      // Check if tone curve is non-linear (not the default linear curve from (0,0) to (1,1))
+      // Sort curve points by x to ensure proper interpolation
+      const sortedCurvePoints = [...params.curvePoints].sort((a, b) => a.x - b.x)
+      const isDefaultCurve = sortedCurvePoints.length === 2 && 
+        Math.abs(sortedCurvePoints[0].x - 0) < 0.001 && 
+        Math.abs(sortedCurvePoints[0].y - 0) < 0.001 &&
+        Math.abs(sortedCurvePoints[1].x - 1) < 0.001 && 
+        Math.abs(sortedCurvePoints[1].y - 1) < 0.001
+      const hasToneCurve = !isDefaultCurve && sortedCurvePoints.length >= 2
       const hasLUT = lutData && lutSize > 0
       const hasGrain = params.grain.amount > 0
       const hasVignette = params.vignette.amount > 0
@@ -659,10 +663,10 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
             const gNorm = g / 255.0
             const bNorm = b / 255.0
             
-            // Apply curve per channel
-            const rCurved = applyToneCurve(rNorm, params.curvePoints)
-            const gCurved = applyToneCurve(gNorm, params.curvePoints)
-            const bCurved = applyToneCurve(bNorm, params.curvePoints)
+            // Apply curve per channel using sorted points
+            const rCurved = applyToneCurve(rNorm, sortedCurvePoints)
+            const gCurved = applyToneCurve(gNorm, sortedCurvePoints)
+            const bCurved = applyToneCurve(bNorm, sortedCurvePoints)
             
             // Convert back to 0-255 range
             r = Math.max(0, Math.min(255, rCurved * 255.0))
