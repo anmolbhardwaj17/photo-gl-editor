@@ -6,6 +6,7 @@ import { LeftSidebar } from './components/LeftSidebar'
 import { RootState } from './store'
 import { useTheme } from './components/ThemeProvider'
 import { useState, useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 
 function App() {
   const imageMeta = useSelector((state: RootState) => state.editor.imageMeta)
@@ -72,6 +73,7 @@ function App() {
           All processing happens locally on your device. We do not collect, store, or transmit any of your data.
         </p>
       </footer>
+      <Analytics />
     </div>
   )
 }
