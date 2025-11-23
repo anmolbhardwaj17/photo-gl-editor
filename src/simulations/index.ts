@@ -197,6 +197,7 @@ function getCubeFileName(id: string): string {
   const filenameMap: Record<string, string> = {}
   
   // Return mapped filename or default to ID.cube
+  // In production, files are in /simulations/ folder in public directory
   return filenameMap[id] || `${id}.cube`
 }
 
@@ -239,9 +240,9 @@ export async function loadSimulations(): Promise<Simulation[]> {
       try {
         // Try to load actual .cube file
         const cubeFileName = getCubeFileName(def.id)
-        // Construct URL relative to current file location
-        const baseUrl = import.meta.url.replace(/\/[^/]*$/, '/')
-        const cubeUrl = new URL(cubeFileName, baseUrl).href
+        // In production, files are served from public folder
+        // Use absolute path from root
+        const cubeUrl = `/simulations/${cubeFileName}`
         const lutResult = await loadCubeLUT(cubeUrl)
         lutData = lutResult.data
         lutSize = lutResult.size
