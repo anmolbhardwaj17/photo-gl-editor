@@ -2,7 +2,6 @@ import { useRef, useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { updateParams } from '../../store/editorSlice'
 import { RootState } from '../../store'
-import { CurvePoint } from '../../store/editorSlice'
 
 export function ToneCurve() {
   const dispatch = useDispatch()
@@ -62,7 +61,7 @@ export function ToneCurve() {
 
     // Draw points
     ctx.fillStyle = '#3b82f6'
-    curvePoints.forEach((point) => {
+    curvePoints.forEach((point: { x: number; y: number }) => {
       const x = padding + (width - padding * 2) * point.x
       const y = height - padding - (height - padding * 2) * point.y
       ctx.beginPath()
@@ -82,8 +81,6 @@ export function ToneCurve() {
     const padding = 20
     const width = canvas.width
     const height = canvas.height
-    const relX = (x - padding) / (width - padding * 2)
-    const relY = 1 - (y - padding) / (height - padding * 2)
 
     // Find closest point
     let minDist = Infinity
@@ -130,7 +127,7 @@ export function ToneCurve() {
 
       // Sort points by x and update dragIndex
       newPoints.sort((a, b) => a.x - b.x)
-      const newIndex = newPoints.findIndex((p, idx) => {
+      const newIndex = newPoints.findIndex((p) => {
         return Math.abs(p.x - relX) < 0.001 && Math.abs(p.y - relY) < 0.001
       })
 

@@ -7,7 +7,6 @@ import { PreviewMode } from '../store/uiSlice'
 export function PreviewModes() {
   const dispatch = useDispatch()
   const previewMode = useSelector((state: RootState) => state.ui.previewMode)
-  const isComparing = useSelector((state: RootState) => state.ui.isComparing)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

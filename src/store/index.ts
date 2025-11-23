@@ -12,13 +12,15 @@ export const store = configureStore({
     export: exportReducer,
     ui: uiReducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
+  middleware: (getDefaultMiddleware) => {
+    const defaultMiddleware = getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: ['editor/setImage'],
         ignoredPaths: ['editor.imageMeta', 'simulations.simulations'],
       },
-    }).concat(createHistoryMiddleware()),
+    })
+    return defaultMiddleware.concat(createHistoryMiddleware() as any)
+  },
 })
 
 export type RootState = ReturnType<typeof store.getState>

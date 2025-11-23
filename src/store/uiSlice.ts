@@ -23,7 +23,7 @@ const initialState: UIState = {
   panY: 0,
   panelsVisible: {
     adjustments: true,
-    simulations: true,
+    presets: true,
     histogram: true,
   },
 }

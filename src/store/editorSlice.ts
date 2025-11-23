@@ -58,7 +58,7 @@ export interface EditorParams {
 export interface EditorState {
   imageMeta: ImageMeta | null
   params: EditorParams
-  activePresetId: string | null
+  activeSimulationId: string | null
   historyIndex: number
 }
 

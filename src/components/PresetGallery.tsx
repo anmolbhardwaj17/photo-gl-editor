@@ -1,22 +1,22 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { setPresets } from '../store/presetsSlice'
-import { setPresetId, clearPreset } from '../store/editorSlice'
-import { loadPresets } from '../presets'
+import { setSimulations } from '../store/simulationsSlice'
+import { setSimulationId, clearSimulation } from '../store/editorSlice'
+import { loadSimulations } from '../simulations'
 import { RootState } from '../store'
-import { Preset } from '../store/presetsSlice'
+import { Simulation } from '../store/simulationsSlice'
 
 export function PresetGallery() {
   const dispatch = useDispatch()
-  const presets = useSelector((state: RootState) => state.presets.presets)
-  const activePresetId = useSelector((state: RootState) => state.editor.activePresetId)
-  const loading = useSelector((state: RootState) => state.presets.loading)
+  const presets = useSelector((state: RootState) => state.simulations.simulations)
+  const activePresetId = useSelector((state: RootState) => state.editor.activeSimulationId)
+  const loading = useSelector((state: RootState) => state.simulations.loading)
 
   useEffect(() => {
     const load = async () => {
       try {
-        const loadedPresets = await loadPresets()
-        dispatch(setPresets(loadedPresets))
+        const loadedPresets = await loadSimulations()
+        dispatch(setSimulations(loadedPresets))
       } catch (error) {
         console.error('Failed to load presets:', error)
       }
@@ -30,12 +30,12 @@ export function PresetGallery() {
   const handlePresetClick = (presetId: string) => {
     // Toggle: if clicking the same preset, deselect it
     if (activePresetId === presetId) {
-      dispatch(clearPreset())
+      dispatch(clearSimulation())
       return
     }
 
     // Otherwise, just change the preset ID and keep all existing adjustments
-    dispatch(setPresetId(presetId))
+    dispatch(setSimulationId(presetId))
   }
 
   if (loading) {
@@ -49,7 +49,7 @@ export function PresetGallery() {
   return (
     <div>
       <div className="flex flex-col">
-        {presets.map((preset: Preset, index: number) => (
+        {presets.map((preset: Simulation, index: number) => (
           <div key={preset.id}>
             <button
               onClick={() => handlePresetClick(preset.id)}

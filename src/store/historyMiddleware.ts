@@ -1,6 +1,12 @@
-import { Middleware } from '@reduxjs/toolkit'
-import { RootState } from './index'
-import { EditorParams } from './editorSlice'
+import { Middleware, AnyAction } from '@reduxjs/toolkit'
+import { EditorParams, CurvePoint } from './editorSlice'
+
+// Define RootState type locally to avoid circular dependency
+type RootState = {
+  editor: {
+    params: EditorParams
+  }
+}
 
 interface HistoryState {
   past: EditorParams[]
@@ -10,7 +16,7 @@ interface HistoryState {
 
 const MAX_HISTORY = 50
 
-export const createHistoryMiddleware = (): Middleware<{}, RootState> => {
+export const createHistoryMiddleware = (): Middleware<object, RootState, any> => {
   const history: HistoryState = {
     past: [],
     present: {
@@ -27,18 +33,19 @@ export const createHistoryMiddleware = (): Middleware<{}, RootState> => {
     future: [],
   }
 
-  return (store) => (next) => (action) => {
+  return (store) => (next) => (action: unknown) => {
     const result = next(action)
+    const typedAction = action as AnyAction
 
     // Only track parameter changes
-    if (action.type === 'editor/updateParams' || action.type === 'editor/setSimulation') {
+    if (typedAction.type === 'editor/updateParams' || typedAction.type === 'editor/setSimulation') {
       const state = store.getState() as RootState
       const currentParams = state.editor.params
 
       // Deep clone params to create immutable snapshot
       const snapshot: EditorParams = {
         ...currentParams,
-        curvePoints: currentParams.curvePoints.map((p) => ({ ...p })),
+        curvePoints: currentParams.curvePoints.map((p: CurvePoint) => ({ ...p })),
         hsl: { ...currentParams.hsl },
         grain: { ...currentParams.grain },
         vignette: { ...currentParams.vignette },
@@ -59,7 +66,7 @@ export const createHistoryMiddleware = (): Middleware<{}, RootState> => {
     }
 
     // Handle undo/redo actions
-    if (action.type === 'history/undo') {
+    if (typedAction.type === 'history/undo') {
       if (history.past.length > 0) {
         history.future.unshift(history.present)
         history.present = history.past.pop()!
@@ -68,7 +75,7 @@ export const createHistoryMiddleware = (): Middleware<{}, RootState> => {
       }
     }
 
-    if (action.type === 'history/redo') {
+    if (typedAction.type === 'history/redo') {
       if (history.future.length > 0) {
         history.past.push(history.present)
         history.present = history.future.shift()!
@@ -77,7 +84,7 @@ export const createHistoryMiddleware = (): Middleware<{}, RootState> => {
       }
     }
 
-    if (action.type === 'editor/setImage' || action.type === 'editor/resetParams') {
+    if (typedAction.type === 'editor/setImage' || typedAction.type === 'editor/resetParams') {
       // Reset history on new image or reset
       history.past = []
       history.future = []
