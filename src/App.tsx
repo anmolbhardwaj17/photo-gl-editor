@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { setMobileBottomSheetOpen } from './store/uiSlice'
 import { Settings2 } from 'lucide-react'
+import { Spotlight } from './components/ui/spotlight'
 
 function App() {
   const imageMeta = useSelector((state: RootState) => state.editor.imageMeta)
@@ -51,9 +52,23 @@ function App() {
           <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {!imageMeta ? (
             /* Right side - Dropzone when no image */
-            <div className="flex-1 flex flex-col items-center justify-center bg-background gap-8 overflow-auto">
+            <div className="flex-1 flex flex-col items-center justify-center bg-background gap-8 overflow-auto relative">
+              {/* Blob image in top right corner */}
+              {/* <img
+                src="/images/blob.png"
+                alt=""
+                className="absolute bottom-50 left-80 w-200 h-200 opacity-20 pointer-events-none z-0"
+                aria-hidden="true"
+              /> */}
+              
+              {/* Spotlight effect */}
+              <Spotlight
+                className="-top-40 left-0 md:left-60 md:-top-20"
+                fill={resolvedTheme === 'dark' ? 'white' : 'black'}
+              />
+              
               {/* Logo above dropzone */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center relative z-10">
                 <img
                   src={resolvedTheme === 'dark'
                     ? '/images/clarity-dark.svg'
@@ -63,7 +78,7 @@ function App() {
                 />
                 <p className="text-muted-foreground text-lg">Where digital meets Fujifilm color.</p>
               </div>
-              <div className="w-full max-w-2xl px-4">
+              <div className="w-full max-w-2xl px-4 relative z-10">
                 <UploadDropzone />
               </div>
             </div>
