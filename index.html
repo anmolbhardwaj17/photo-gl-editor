@@ -50,8 +50,8 @@
   <body>
     <div id="root"></div>
     <script>
+      // Console message - show ASCII art and link
       (function () {
-        // ASCII art (preserves spaces)
         const ascii = `
            /\\    
           /  \\   
@@ -59,27 +59,19 @@
         / ____ \\ 
        /_/    \\_\\
         `;
-      
-        // Print ASCII
+        const url = "https://anmolbhardwaj.com";
+
         console.log(
           "%c" + ascii,
           "font-family: monospace; white-space: pre; font-size: 14px;"
         );
-      
-        // Printable link text
-        const url = "https://anmolbhardwaj.com";
-      
-        // Styled console message with clickable URL
         console.log(
           "%cCheck out %c" + url,
           "font-size: 12px; font-weight: bold; color: yellow;",
           "font-size: 12px; text-decoration: underline; color: yellow;"
         );
-      
-        // Open the link in a new tab (because console cannot detect clicks)
-        window.open(url, "_blank");
       })();
-      </script>
+    </script>
       
     <script type="module" src="/src/main.tsx"></script>
   </body>
