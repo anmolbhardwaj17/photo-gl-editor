@@ -13,6 +13,8 @@ interface UIState {
     presets: boolean
     histogram: boolean
   }
+  mobileBottomSheetOpen: boolean
+  mobileBottomSheetHeight: number
 }
 
 const initialState: UIState = {
@@ -26,6 +28,8 @@ const initialState: UIState = {
     presets: true,
     histogram: true,
   },
+  mobileBottomSheetOpen: false,
+  mobileBottomSheetHeight: 0,
 }
 
 export const uiSlice = createSlice({
@@ -48,9 +52,18 @@ export const uiSlice = createSlice({
     togglePanel: (state, action: PayloadAction<keyof UIState['panelsVisible']>) => {
       state.panelsVisible[action.payload] = !state.panelsVisible[action.payload]
     },
+    setMobileBottomSheetOpen: (state, action: PayloadAction<boolean>) => {
+      state.mobileBottomSheetOpen = action.payload
+      if (!action.payload) {
+        state.mobileBottomSheetHeight = 0
+      }
+    },
+    setMobileBottomSheetHeight: (state, action: PayloadAction<number>) => {
+      state.mobileBottomSheetHeight = action.payload
+    },
   },
 })
 
-export const { setPreviewMode, setIsComparing, setZoom, setPan, togglePanel } = uiSlice.actions
+export const { setPreviewMode, setIsComparing, setZoom, setPan, togglePanel, setMobileBottomSheetOpen, setMobileBottomSheetHeight } = uiSlice.actions
 export default uiSlice.reducer
 

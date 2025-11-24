@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '../store'
 
@@ -30,12 +30,48 @@ export function ImageVisualizations() {
   const params = useSelector((state: RootState) => state.editor.params)
   const activeSimulationId = useSelector((state: RootState) => state.editor.activeSimulationId)
   const simulations = useSelector((state: RootState) => state.simulations.simulations)
+  const mobileBottomSheetOpen = useSelector((state: RootState) => state.ui.mobileBottomSheetOpen)
+  const mobileBottomSheetHeight = useSelector((state: RootState) => state.ui.mobileBottomSheetHeight)
   const [processedData, setProcessedData] = useState<ProcessedImageData | null>(null)
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 768)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerWidth, setContainerWidth] = useState(400)
 
   // Get active simulation's LUT data
   const activeSimulation = simulations.find((p: { id: string }) => p.id === activeSimulationId)
   const lutData = activeSimulation?.lutData
   const lutSize = activeSimulation?.lutSize || 0
+
+  // Track window resize and container size for responsive canvas sizing
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth)
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth)
+      }
+    }
+    window.addEventListener('resize', handleResize)
+    
+    // Use ResizeObserver to track container size changes
+    if (containerRef.current) {
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          setContainerWidth(entry.contentRect.width)
+        }
+      })
+      resizeObserver.observe(containerRef.current)
+      
+      // Initial measurement
+      setContainerWidth(containerRef.current.offsetWidth)
+      
+      return () => {
+        window.removeEventListener('resize', handleResize)
+        resizeObserver.disconnect()
+      }
+    }
+    
+    return () => window.removeEventListener('resize', handleResize)
+  }, [mobileBottomSheetOpen, mobileBottomSheetHeight])
 
   // Process image and extract all data needed for visualizations
   useEffect(() => {
@@ -450,43 +486,79 @@ export function ImageVisualizations() {
   }
 
   const visualizationOptions: { value: VisualizationType; label: string }[] = [
-    { value: 'histogram-luminance', label: 'Luminance Histogram' },
     { value: 'histogram-rgb', label: 'RGB Histogram' },
-    { value: 'histogram-channels', label: 'Color Channels' },
-    { value: 'waveform-luma', label: 'Luma Waveform' },
     { value: 'waveform-rgb', label: 'RGB Waveform' },
     { value: 'vectorscope', label: 'Vectorscope' },
     { value: 'scatter-3d', label: '3D Scatter' },
+    { value: 'histogram-luminance', label: 'Luminance Histogram' },
+    { value: 'histogram-channels', label: 'Color Channels' },
+    { value: 'waveform-luma', label: 'Luma Waveform' },
     { value: 'entropy', label: 'Entropy' },
   ]
 
-  // Render all visualizations when processedData changes
-  useEffect(() => {
+  // Render all visualizations when processedData changes or window size/bottom sheet changes
+  useLayoutEffect(() => {
     if (!processedData) return
 
-    visualizationOptions.forEach((opt) => {
-      const canvas = document.getElementById(`viz-${opt.value}`) as HTMLCanvasElement
-      if (canvas) {
-        renderVisualization(canvas, opt.value, processedData)
-      }
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [processedData])
+    // Wait for bottom sheet to be fully visible and container to have proper width
+    const renderVisualizations = () => {
+      visualizationOptions.forEach((opt) => {
+        const canvas = document.getElementById(`viz-${opt.value}`) as HTMLCanvasElement
+        if (canvas && canvas.offsetWidth > 0 && canvas.offsetHeight > 0) {
+          // Ensure canvas has proper dimensions
+          const actualWidth = canvas.offsetWidth
+          const actualHeight = canvasDimensions.height
+          if (canvas.width !== actualWidth || canvas.height !== actualHeight) {
+            canvas.width = actualWidth
+            canvas.height = actualHeight
+          }
+          renderVisualization(canvas, opt.value, processedData)
+        }
+      })
+    }
+
+    // Delay to ensure DOM is ready and bottom sheet is visible
+    const timeoutId = setTimeout(() => {
+      renderVisualizations()
+      // Also try after a longer delay in case the bottom sheet is still animating
+      setTimeout(renderVisualizations, 300)
+    }, mobileBottomSheetOpen ? 200 : 100)
+
+    return () => clearTimeout(timeoutId)
+  }, [processedData, windowWidth, mobileBottomSheetOpen, mobileBottomSheetHeight, containerWidth])
+
+  // Calculate responsive canvas dimensions based on actual container width
+  const isMobile = windowWidth < 768
+  const effectiveWidth = containerWidth > 0 ? containerWidth - 32 : (isMobile ? windowWidth - 32 : 400) // Account for padding
+  const canvasDimensions = {
+    width: isMobile ? Math.max(300, Math.min(effectiveWidth, 400)) : 400,
+    height: isMobile ? Math.max(150, Math.round(effectiveWidth * 0.5)) : 200, // Maintain aspect ratio
+  }
 
   return (
-    <div className="space-y-6">
-      {visualizationOptions.map((opt) => (
-        <div key={opt.value} className="space-y-2">
-          <h3 className="text-sm font-medium text-foreground">{opt.label}</h3>
-          <canvas
-            id={`viz-${opt.value}`}
-            width={400}
-            height={200}
-            className="w-full rounded"
-            aria-label={opt.label}
-          />
-        </div>
-      ))}
+    <div ref={containerRef} className="space-y-6 pb-4">
+      {visualizationOptions.map((opt) => {
+        const canvasKey = `${opt.value}-${canvasDimensions.width}-${canvasDimensions.height}`
+        return (
+          <div key={canvasKey} className="space-y-2">
+            <h3 className="text-sm font-medium text-foreground">{opt.label}</h3>
+            <div className="w-full bg-card/50 rounded p-2">
+              <canvas
+                id={`viz-${opt.value}`}
+                width={canvasDimensions.width}
+                height={canvasDimensions.height}
+                className="w-full rounded"
+                style={{ 
+                  height: 'auto',
+                  display: 'block',
+                  maxWidth: '100%',
+                }}
+                aria-label={opt.label}
+              />
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

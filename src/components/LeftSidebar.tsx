@@ -5,12 +5,18 @@ import { AdjustmentsPanel } from './AdjustmentsPanel'
 import { EffectsPanel } from './AdjustmentsPanel/EffectsPanel'
 import { ImageVisualizations } from './ImageVisualizations'
 import { useTheme } from './ThemeProvider'
+import { DraggableBottomSheet } from './DraggableBottomSheet'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '../store'
+import { setMobileBottomSheetOpen } from '../store/uiSlice'
 
 type Tab = 'simulations' | 'adjustments' | 'effects' | 'histogram'
 
 export function LeftSidebar() {
   const [activeTab, setActiveTab] = useState<Tab>('simulations')
   const { theme } = useTheme()
+  const dispatch = useDispatch()
+  const mobileBottomSheetOpen = useSelector((state: RootState) => state.ui.mobileBottomSheetOpen)
   const [isDark, setIsDark] = useState(theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches))
   
   useEffect(() => {
@@ -34,8 +40,8 @@ export function LeftSidebar() {
     { id: 'histogram' as Tab, icon: ChartScatter, label: 'Histogram' },
   ]
 
-  return (
-    <aside className="w-96  flex flex-col p-2">
+  const sidebarContent = (
+    <>
       {/* Top navigation tabs */}
       <div className="flex justify-center my-4 gap-2">
         {tabs.map((tab) => {
@@ -56,7 +62,6 @@ export function LeftSidebar() {
                 aria-label={tab.label}
               >
                 <Icon className="w-4 h-4" />
-                {/* <span className="text-sm">{tab.label}</span> */}
               </button>
             </div>
           )
@@ -86,7 +91,27 @@ export function LeftSidebar() {
           </div>
         )}
       </div>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* Desktop: Regular sidebar */}
+      <aside className="hidden md:flex w-96 flex-col p-2 border-r border-border">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile: Bottom sheet */}
+      <DraggableBottomSheet
+        isOpen={mobileBottomSheetOpen}
+        onClose={() => dispatch(setMobileBottomSheetOpen(false))}
+        minHeight={120}
+      >
+        <div className="flex flex-col h-full p-2">
+          {sidebarContent}
+        </div>
+      </DraggableBottomSheet>
+    </>
   )
 }
 

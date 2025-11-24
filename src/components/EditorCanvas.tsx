@@ -112,6 +112,7 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
   const containerRef = useRef<HTMLDivElement>(null)
   const infoPanelRef = useRef<HTMLDivElement>(null)
   const [showInfo, setShowInfo] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   
   const handleRemoveImage = () => {
     dispatch(setImage(null))
@@ -148,6 +149,15 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
       setResolvedTheme(theme)
     }
   }, [theme])
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768) // md breakpoint
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Close info panel when clicking outside
   useEffect(() => {
@@ -199,8 +209,9 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
     if (!imageMeta) return { width: 800, height: 600 }
     
     const aspect = imageMeta.width / imageMeta.height
-    const maxWidth = previewWidth || 1200
-    const maxHeight = previewHeight || 800
+    // On desktop, allow much larger images - use viewport dimensions
+    const maxWidth = isMobile ? (previewWidth || 1200) : (previewWidth || window.innerWidth * 0.6)
+    const maxHeight = isMobile ? (previewHeight || 800) : (previewHeight || window.innerHeight * 0.8)
     
     let width = Math.min(imageMeta.width, maxWidth)
     let height = width / aspect
@@ -211,7 +222,7 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
     }
     
     return { width: Math.round(width), height: Math.round(height) }
-  }, [imageMeta, previewWidth, previewHeight])
+  }, [imageMeta, previewWidth, previewHeight, isMobile])
 
   // Extract image metadata including EXIF
   useEffect(() => {
@@ -781,21 +792,22 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
   }
 
   return (
-    <div className="flex flex-col m-4  rounded-3xl" style={{ width: 'calc(100% - 2rem)', height: 'calc(100% - 2rem)' }}>
+    <div className="flex flex-col h-full w-full">
       <div
         ref={containerRef}
-        className="flex-1"
+        className="flex-1 min-h-0"
         style={{
           position: 'relative',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
+          padding: isMobile ? '0.25rem' : '1rem',
         }}
       >
         <canvas
           ref={canvasRef}
-          className=" rounded-3xl p-3"
+          className="rounded-3xl"
           style={{
             maxWidth: '100%',
             maxHeight: '100%',
@@ -922,7 +934,7 @@ export function EditorCanvas({ previewWidth, previewHeight }: EditorCanvasProps)
           </div>
         )}
       </div>
-      <div className="px-4 pb-4">
+      <div className={`flex-shrink-0 ${isMobile ? 'px-2 pb-2' : 'px-4 pb-4'}`}>
         <ActiveEdits />
       </div>
     </div>
