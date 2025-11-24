@@ -63,8 +63,8 @@ function App() {
               
               {/* Spotlight effect */}
               <Spotlight
-                className="-top-40 left-0 md:left-60 md:-top-20"
-                fill={resolvedTheme === 'dark' ? 'white' : 'black'}
+                className="-top-20 -left-20 md:left-60 md:-top-20"
+                fill={resolvedTheme === 'dark' ? 'white' : ''}
               />
               
               {/* Logo above dropzone */}
